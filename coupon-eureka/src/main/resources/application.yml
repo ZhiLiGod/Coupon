@@ -1,6 +1,8 @@
 spring:
   application:
     name: coupon-eureka
+  main:
+    banner-mode: "off"
 
 server:
   port: 8000
