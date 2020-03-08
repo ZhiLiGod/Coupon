@@ -1,0 +1,6 @@
+spring:
+  application:
+    name: coupon-gateway
+
+server:
+  port: 9070

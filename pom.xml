@@ -9,6 +9,7 @@
     <version>1.0-SNAPSHOT</version>
     <modules>
         <module>coupon-eureka</module>
+        <module>coupon-zuul</module>
     </modules>
     <packaging>pom</packaging>
 
