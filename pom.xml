@@ -10,6 +10,7 @@
     <modules>
         <module>coupon-eureka</module>
         <module>coupon-zuul</module>
+        <module>coupon-service</module>
     </modules>
     <packaging>pom</packaging>
 
