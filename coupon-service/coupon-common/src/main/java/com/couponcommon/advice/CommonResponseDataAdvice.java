@@ -26,12 +26,8 @@ public class CommonResponseDataAdvice implements ResponseBodyAdvice<Object> {
     }
 
     // if method has @IgnoreResponseAdvice, then return false;
-    if (returnType.getMethod().isAnnotationPresent(IgnoreResponseAdvice.class)) {
-      return false;
-    }
-
+    return !returnType.getMethod().isAnnotationPresent(IgnoreResponseAdvice.class);
     // handle response (do beforeBodyWrite)
-    return true;
   }
 
   @Override
@@ -40,7 +36,7 @@ public class CommonResponseDataAdvice implements ResponseBodyAdvice<Object> {
       MethodParameter returnType, MediaType selectedContentType,
       Class<? extends HttpMessageConverter<?>> selectedConverterType,
       ServerHttpRequest request, ServerHttpResponse response) {
-    // @formatter:on
+  // @formatter:on
 
     // define the final response object
     CommonResponse<Object> commonResponse = new CommonResponse<>(0, "");
