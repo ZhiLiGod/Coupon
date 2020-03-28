@@ -2,6 +2,7 @@ package com.couponcommon.constant;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NonNull;
 
 import java.util.stream.Stream;
 
@@ -18,7 +19,7 @@ public enum ProductLine {
 
   private Integer code;
 
-  public static ProductLine of(Integer code) {
+  public static ProductLine of(@NonNull Integer code) {
     // @formatter:off
     return Stream.of(values())
       .filter(c -> c.code.equals(code))
