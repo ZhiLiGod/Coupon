@@ -1,5 +1,9 @@
 package com.coupon.template.entity;
 
+import com.coupon.template.converter.CouponCategoryConverter;
+import com.coupon.template.converter.DistributeTargetConverter;
+import com.coupon.template.converter.ProductLineConverter;
+import com.coupon.template.converter.RuleConverter;
 import com.couponcommon.constant.CouponCategory;
 import com.couponcommon.constant.DistributeTarget;
 import com.couponcommon.constant.ProductLine;
@@ -48,9 +52,11 @@ public class CouponTemplate implements Serializable {
   private String desc;
 
   @Column(name = "category", nullable = false)
+  @Convert(converter = CouponCategoryConverter.class)
   private CouponCategory category;
 
   @Column(name = "product_line", nullable = false)
+  @Convert(converter = ProductLineConverter.class)
   private ProductLine productLine;
 
   @Column(name = "coupon_count", nullable = false)
@@ -67,9 +73,11 @@ public class CouponTemplate implements Serializable {
   private String key;
 
   @Column(name = "target", nullable = false)
+  @Convert(converter = DistributeTargetConverter.class)
   private DistributeTarget target;
 
   @Column(name = "rule", nullable = false)
+  @Convert(converter = RuleConverter.class)
   private TemplateRule rule;
 
   // @formatter:off
