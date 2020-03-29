@@ -19,6 +19,16 @@ public class TemplateRule {
   // can be used with other coupon, same type of coupon is not allowed
   private String weight;
 
+  public boolean validate() {
+    // @formatter:off
+    return expiration.validate()
+      && StringUtils.isNotEmpty(weight)
+      && discount.validate()
+      && limitation > 0
+      && usage.validate();
+    // @formatter:on
+  }
+
   @Data
   @NoArgsConstructor
   @AllArgsConstructor
