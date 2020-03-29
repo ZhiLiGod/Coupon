@@ -4,10 +4,12 @@ import com.coupon.template.converter.CouponCategoryConverter;
 import com.coupon.template.converter.DistributeTargetConverter;
 import com.coupon.template.converter.ProductLineConverter;
 import com.coupon.template.converter.RuleConverter;
+import com.coupon.template.serialization.CouponTemplateSerialize;
 import com.couponcommon.constant.CouponCategory;
 import com.couponcommon.constant.DistributeTarget;
 import com.couponcommon.constant.ProductLine;
 import com.couponcommon.dto.TemplateRule;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -26,6 +28,7 @@ import java.time.format.DateTimeFormatter;
 @AllArgsConstructor
 @NoArgsConstructor
 @Table(name = "coupon_template")
+@JsonSerialize(using = CouponTemplateSerialize.class)
 @EntityListeners(AuditingEntityListener.class)
 public class CouponTemplate implements Serializable {
 
