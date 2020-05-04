@@ -86,6 +86,9 @@ public class RedisServiceImpl implements IRedisService {
       result = addCoupon2CacheForUsed(userId, coupons);
       break;
     case EXPIRED:
+      result = addCoupon2CacheForExpired(userId, coupons);
+      break;
+    default:
       break;
     }
 
@@ -120,7 +123,6 @@ public class RedisServiceImpl implements IRedisService {
     }
 
     SessionCallback<Object> sessionCallback = new SessionCallback<Object>() {
-
       @SuppressWarnings("all")
       @Override
       public Object execute(RedisOperations operations) throws DataAccessException {
@@ -128,6 +130,39 @@ public class RedisServiceImpl implements IRedisService {
         operations.opsForHash().delete(redisKeyForUsable, paramIds.stream().map(Object::toString).toArray());
         operations.expire(redisKeyForUsable, getRandomExpirationTime(1, 2), TimeUnit.SECONDS);
         operations.expire(redisKeyForUsed, getRandomExpirationTime(1, 2), TimeUnit.SECONDS);
+        return null;
+      }
+    };
+
+    log.info("Pipeline Exe Result: {}", JSON.toJSONString(redisTemplate.executePipelined(sessionCallback)));
+    return coupons.size();
+  }
+
+  private Integer addCoupon2CacheForExpired(Long userId, List<Coupon> coupons) throws CouponException {
+    Map<String, String> needCachedForExpired = new HashMap<>();
+    String redisKeyForUsable = status2RedisKey(CouponStatus.USABLE.getCode(), userId);
+    String redisKeyForExpired = status2RedisKey(CouponStatus.EXPIRED.getCode(), userId);
+    List<Coupon> currentUsableCoupons = getCachedCoupons(userId, CouponStatus.USABLE.getCode());
+
+    assert currentUsableCoupons.size() > coupons.size();
+
+    coupons.forEach(c -> needCachedForExpired.put(c.getId().toString(), JSON.toJSONString(c)));
+    List<Long> currentUsableIds = currentUsableCoupons.stream().map(Coupon::getId).collect(Collectors.toList()) ;
+    List<Long> paramIds = coupons.stream().map(Coupon::getId).collect(Collectors.toList());
+
+    if (paramIds.stream().anyMatch(p -> !currentUsableIds.contains(p))) {
+      log.error("Current Coupons is Not Equal toCache");
+      throw new CouponException("Invalid coupons");
+    }
+
+    SessionCallback<Object> sessionCallback = new SessionCallback<Object>() {
+      @SuppressWarnings("all")
+      @Override
+      public Object execute(RedisOperations operations) throws DataAccessException {
+        operations.opsForHash().putAll(redisKeyForExpired, needCachedForExpired);
+        operations.opsForHash().delete(redisKeyForUsable, paramIds.stream().map(Object::toString).toArray());
+        operations.expire(redisKeyForUsable, getRandomExpirationTime(1, 2), TimeUnit.SECONDS);
+        operations.expire(redisKeyForExpired, getRandomExpirationTime(1, 2), TimeUnit.SECONDS);
         return null;
       }
     };
