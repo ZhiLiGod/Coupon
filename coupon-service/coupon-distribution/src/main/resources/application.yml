@@ -58,6 +58,6 @@ feign:
       default:
         connectTimeout: 2000
         readTimeout: 5000
-      eureka-client-cpipon-template:
+      eureka-client-coupon-template:
         connectTimeout: 3000
         readTimeout: 5000
