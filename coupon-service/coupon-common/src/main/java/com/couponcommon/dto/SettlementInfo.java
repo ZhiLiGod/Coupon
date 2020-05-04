@@ -12,6 +12,8 @@ public class SettlementInfo {
   private List<GoodsInfo> goodsInfos;
   private List<CouponAndTemplateInfo> couponAndTemplateInfos;
   private BigDecimal cost;
+  // calc or pay
+  private boolean employ;
 
   @Data
   public static class CouponAndTemplateInfo {
