@@ -45,7 +45,7 @@ public class CouponTemplateController {
     return ResponseEntity.ok(templateBaseService.findAllUsableTemplates());
   }
 
-  @GetMapping("/sdk.infos")
+  @GetMapping("/sdk/infos")
   public ResponseEntity<Map<Long, CouponTemplateSDK>> findIds2TemplateSDK(@RequestParam Collection<Long> ids) {
     return ResponseEntity.ok(templateBaseService.findIds2TemplateSDK(ids));
   }
