@@ -2,7 +2,9 @@ package com.coupon.distribution.entity;
 
 import com.coupon.distribution.constant.CouponStatus;
 import com.coupon.distribution.converter.CouponStatusConverter;
+import com.coupon.distribution.serialization.CouponSerialize;
 import com.couponcommon.dto.CouponTemplateSDK;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -10,7 +12,6 @@ import org.springframework.data.annotation.CreatedDate;
 import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 
 import javax.persistence.*;
-import java.io.Serializable;
 import java.time.LocalDateTime;
 
 @Data
@@ -19,9 +20,8 @@ import java.time.LocalDateTime;
 @Entity
 @Table(name = "coupon")
 @EntityListeners(AuditingEntityListener.class)
-public class Coupon implements Serializable {
-
-  private static final long serialVersionUID = -8112573212067104150L;
+@JsonSerialize(using = CouponSerialize.class)
+public class Coupon {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
