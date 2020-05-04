@@ -38,7 +38,7 @@ public class CouponTemplateController {
 
   /**
    * for third party usage
-   * @return
+   * @return {@link CouponTemplateSDK}
    */
   @GetMapping("/sdk/all")
   public ResponseEntity<List<CouponTemplateSDK>> findAllUsableTemplate() {
