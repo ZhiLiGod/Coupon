@@ -1,6 +1,7 @@
 package com.coupon.distribution.entity;
 
 import com.coupon.distribution.constant.CouponStatus;
+import com.coupon.distribution.converter.CouponStatusConverter;
 import com.couponcommon.dto.CouponTemplateSDK;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -40,7 +41,7 @@ public class Coupon implements Serializable {
   @Column(name = "assign_time", nullable = false)
   private LocalDateTime assignTime;
 
-  @Enumerated(EnumType.ORDINAL)
+  @Convert(converter = CouponStatusConverter.class)
   @Column(name = "status", nullable = false)
   private CouponStatus status;
 
