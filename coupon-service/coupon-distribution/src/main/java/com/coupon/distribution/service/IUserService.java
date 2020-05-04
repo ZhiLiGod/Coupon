@@ -3,6 +3,7 @@ package com.coupon.distribution.service;
 import com.coupon.distribution.dto.AcquireTemplateRequest;
 import com.coupon.distribution.entity.Coupon;
 import com.couponcommon.dto.CouponTemplateSDK;
+import com.couponcommon.dto.SettlementInfo;
 import com.couponcommon.exception.CouponException;
 
 import java.util.List;
@@ -14,5 +15,7 @@ public interface IUserService {
   List<CouponTemplateSDK> findAvailableTemplates(Long userId) throws CouponException;
 
   Coupon acquireTemplate(AcquireTemplateRequest request) throws CouponException;
+
+  SettlementInfo settlement(SettlementInfo settlementInfo) throws CouponException;
 
 }
