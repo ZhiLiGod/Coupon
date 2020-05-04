@@ -7,6 +7,7 @@ import com.coupon.distribution.service.IRedisService;
 import com.couponcommon.constant.Constant;
 import com.couponcommon.exception.CouponException;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.RandomUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataAccessException;
 import org.springframework.data.redis.core.RedisOperations;
@@ -16,6 +17,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -68,12 +70,34 @@ public class RedisServiceImpl implements IRedisService {
 
   @Override
   public String tryToAcquireCouponCodeFromCache(Integer templateId) {
-    return null;
+    String redisKey = String.format("%s%s", Constant.RedisPrefix.COUPON_TEMPLATE, templateId.toString());
+    return redisTemplate.opsForList().leftPop(redisKey);
   }
 
   @Override
   public Integer addCouponToCache(Long userId, List<Coupon> coupons, Integer status) throws CouponException {
-    return null;
+    Integer result = -1;
+
+    switch (CouponStatus.of(status)) {
+    case USABLE:
+      result = addCoupon2CacheForUsable(userId, coupons);
+      break;
+    case USED:
+      break;
+    case EXPIRED:
+      break;
+    }
+
+    return result;
+  }
+
+  private Integer addCoupon2CacheForUsable(Long userId, List<Coupon> coupons) {
+    Map<String, String> needCachedObjects = new HashMap<>();
+    coupons.forEach(c -> needCachedObjects.put(c.getId().toString(), JSON.toJSONString(c)));
+    String redisKey = status2RedisKey(CouponStatus.USABLE.getCode(), userId);
+    redisTemplate.opsForHash().putAll(redisKey, needCachedObjects);
+    redisTemplate.expire(redisKey, getRandomExpirationTime(1, 2), TimeUnit.SECONDS);
+    return needCachedObjects.size();
   }
 
   private String status2RedisKey(Integer status, Long userId) {
@@ -94,6 +118,16 @@ public class RedisServiceImpl implements IRedisService {
     }
 
     return redisKey;
+  }
+
+  /**
+   * get a random expiration time, avoid cache avalanche
+   * @param min hour
+   * @param max hour
+   * @return [min, max] random second
+   */
+  private Long getRandomExpirationTime(Integer min, Integer max) {
+    return RandomUtils.nextLong(min * 60 * 60, max * 60 * 60);
   }
 
 }
