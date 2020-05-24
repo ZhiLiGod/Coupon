@@ -17,10 +17,15 @@ import com.couponcommon.dto.SettlementInfo;
 import com.couponcommon.exception.CouponException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.util.Pair;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 
+import java.sql.Timestamp;
+import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -104,7 +109,39 @@ public class UserServiceImpl implements IUserService {
 
   @Override
   public List<CouponTemplateSDK> findAvailableTemplates(Long userId) throws CouponException {
-    return null;
+    long currentTime = Timestamp.valueOf(LocalDateTime.now()).getTime();
+    List<CouponTemplateSDK> templateSDKS = templateClient.findAllUsableTemplate().getData();
+    log.debug("Find all template SDK from template client, count: {}", templateSDKS.size());
+
+    // filter expired coupons
+    templateSDKS = templateSDKS.stream()
+      .filter(t -> t.getRule().getExpiration().getDeadline() > currentTime)
+      .collect(Collectors.toList());
+    log.info("Find usable template count: {}", templateSDKS.size());
+
+    // key: template id
+    // value: key: template limitation, value: coupon template
+    Map<Long, Pair<Integer, CouponTemplateSDK>> limit2Template = new HashMap<>(templateSDKS.size());
+    templateSDKS.forEach(t -> limit2Template.put(t.getId(), Pair.of(t.getRule().getLimitation(), t)));
+    List<CouponTemplateSDK> result = new ArrayList<>(limit2Template.size());
+    List<Coupon> userUsableCoupons = findCouponsByStatus(userId, CouponStatus.USABLE.getCode());
+    log.debug("Current user has usable coupons : {} {}", userId, userUsableCoupons.size());
+
+    Map<Long, List<Coupon>> templateId2Coupons = userUsableCoupons.stream()
+      .collect(Collectors.groupingBy(Coupon::getId));
+
+    limit2Template.forEach((k, v) -> {
+      int limitation = v.getFirst();
+      CouponTemplateSDK templateSDK = v.getSecond();
+
+      if (templateId2Coupons.containsKey(k) && templateId2Coupons.get(k).size() >= limitation) {
+        return;
+      }
+
+      result.add(templateSDK);
+    });
+
+    return result;
   }
 
   @Override
