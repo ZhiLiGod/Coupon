@@ -18,7 +18,7 @@ public class CreatePathRequest {
   @Builder
   @NoArgsConstructor
   @AllArgsConstructor
-  private static class PathInfo {
+  public static class PathInfo {
 
     private String pathPattern;
     private String httpMethod;
