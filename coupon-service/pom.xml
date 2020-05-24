@@ -15,6 +15,8 @@
         <module>coupon-common</module>
         <module>coupon-template</module>
         <module>coupon-distribution</module>
+        <module>coupon-permission-sdk</module>
+        <module>coupon-permission-service</module>
     </modules>
     <packaging>pom</packaging>
 
