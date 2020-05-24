@@ -33,7 +33,7 @@ public class Path implements Serializable {
   @Column(name = "service_name", nullable = false)
   private String serviceName;
 
-  @Column(name = "op_name", nullable = false)
+  @Column(name = "op_mode", nullable = false)
   private String opMode;
 
   /**
