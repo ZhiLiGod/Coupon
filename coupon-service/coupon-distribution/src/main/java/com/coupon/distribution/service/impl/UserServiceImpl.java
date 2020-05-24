@@ -21,13 +21,11 @@ import org.springframework.data.util.Pair;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
+import org.springframework.util.StringUtils;
 
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.stream.Collectors;
 
 /**
@@ -144,9 +142,52 @@ public class UserServiceImpl implements IUserService {
     return result;
   }
 
+  /**
+   * user get token
+   * @param request {@link AcquireTemplateRequest}
+   * @return {@link Coupon}
+   * @throws CouponException
+   */
   @Override
   public Coupon acquireTemplate(AcquireTemplateRequest request) throws CouponException {
-    return null;
+    // @formatter: off
+    Map<Long, CouponTemplateSDK> id2Template = templateClient.findIds2TemplateSDK(
+      Collections.singletonList(request.getTemplateSDK().getId())
+    ).getData();
+    // @formatter:on
+
+    if (id2Template.size() <= 0) {
+      log.error("Cannot acquire template from template client");
+      throw new CouponException("Cannot acquire template from template client");
+    }
+
+    // check if user is able to get this coupon
+    List<Coupon> userUsableCoupons = findCouponsByStatus(request.getUserId(), CouponStatus.USABLE.getCode());
+    Map<Long, List<Coupon>> templateId2Coupons = userUsableCoupons.stream()
+      .collect(Collectors.groupingBy(Coupon::getId));
+
+    if (templateId2Coupons.containsKey(request.getTemplateSDK().getId()) &&
+      templateId2Coupons.get(request.getTemplateSDK().getId()).size() >= request.getTemplateSDK().getRule().getLimitation()) {
+      log.error("Exceed template assign limitation: {}", request.getTemplateSDK().getId());
+      throw new CouponException("Exceed template assign limitation: " + request.getTemplateSDK().getId());
+    }
+
+    String couponCode = redisService.tryToAcquireCouponCodeFromCache(request.getTemplateSDK().getId().intValue());
+    if (StringUtils.isEmpty(couponCode)) {
+      log.error("Cannot require coupon code");
+      throw new CouponException("Cannot require coupon code");
+    }
+
+    Coupon newCoupon = new Coupon(
+      request.getTemplateSDK().getId(), request.getUserId(), couponCode, CouponStatus.USABLE
+    );
+    newCoupon = couponRepository.save(newCoupon);
+
+    // fill in coupon template sdk and then save in cache
+    newCoupon.setTemplateSDK(request.getTemplateSDK());
+    redisService.addCouponToCache(request.getUserId(), Collections.singletonList(newCoupon), CouponStatus.USABLE.getCode());
+
+    return newCoupon;
   }
 
   @Override
